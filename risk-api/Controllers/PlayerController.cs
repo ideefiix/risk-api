@@ -25,12 +25,14 @@ public class PlayerController : ControllerBase
         return Ok(_playerProcess.GetAllPlayers());
     }
 
+    [PersonalResource]
     [HttpGet("{Id}")]
     public ActionResult<GetPlayerDto> GetSinglePlayer([FromRoute] Guid Id)
     {
         return Ok(_playerProcess.GetSinglePlayer(Id));
     }
 
+    [AllowAnonymous]
     [HttpPost]
     public ActionResult<CreatePlayerDto> CreatePlayer([FromBody] CreatePlayerRequest request)
     {

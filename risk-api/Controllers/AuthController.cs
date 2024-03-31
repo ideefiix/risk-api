@@ -1,6 +1,7 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using risk_api.Controllers.Requests;
@@ -23,13 +24,16 @@ public class AuthController : ControllerBase
     }
     
     [HttpPost("login")]
-    public Task<ActionResult> Login(LoginRequest req)
+    public ActionResult Login(LoginRequest req)
     {
         Player? player = _context.Players.FirstOrDefault(p => p.Username == req.Username);
-
+        //Leaks too much information to client. But this is not a bank.
         if (player == null) return BadRequest("User not found");
 
-        if (!BCrypt.Net.BCrypt.Verify(req.Password, player.PasswordHash)) return BadRequest("Invalid password");
+        var hasher = new PasswordHasher<Player>();
+        var validationResult = hasher.VerifyHashedPassword(player, player.Password, req.Password);
+        
+        if (validationResult == PasswordVerificationResult.Failed) return BadRequest("Invalid password");
 
         var token = CreateToken(player);
 
@@ -40,17 +44,20 @@ public class AuthController : ControllerBase
     {
         List<Claim> claims = new List<Claim>()
         {
-            new Claim("playerName", player.PlayerName),
-            new Claim("id", player.PlayerId.ToString())
+            new Claim("Username", player.Username),
+            new Claim("Id", player.Id.ToString())
         };
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config.GetSection("Token").Value!));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config.GetSection("Jwt:Key").Value));
+        var issuer = _config.GetSection("Jwt:Issuer").Value;
 
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
             
         var token = new JwtSecurityToken(
+            audience: issuer,
+            issuer: issuer,
             claims: claims,
-            expires: DateTime.Now.AddDays(1),
+            expires: DateTime.Now.AddDays(7),
             signingCredentials: credentials
         );
         var jwt = new JwtSecurityTokenHandler().WriteToken(token);
