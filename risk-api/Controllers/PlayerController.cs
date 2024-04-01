@@ -24,19 +24,32 @@ public class PlayerController : ControllerBase
     {
         return Ok(_playerProcess.GetAllPlayers());
     }
-
-    [PersonalResource]
-    [HttpGet("{Id}")]
-    public ActionResult<GetPlayerDto> GetSinglePlayer([FromRoute] Guid Id)
+    
+    [HttpGet("{userId}")]
+    public ActionResult<GetPlayerDto> GetSinglePlayer([FromRoute] Guid userId)
     {
-        return Ok(_playerProcess.GetSinglePlayer(Id));
+        //Auth
+        var authenticated = AuthValidator.UserHasId(HttpContext.Request, userId.ToString());
+        if (!authenticated) return Unauthorized();
+        
+        return Ok(_playerProcess.GetSinglePlayer(userId));
     }
-
+    
     [AllowAnonymous]
     [HttpPost]
     public ActionResult<CreatePlayerDto> CreatePlayer([FromBody] CreatePlayerRequest request)
     {
         var dto = _playerProcess.CreatePlayer(request);
         return Created("not used", dto);
+    }
+    
+    [HttpPut("/color/{userId}")]
+    public ActionResult<GetPlayerDto> UpdateColor([FromRoute] Guid userId)
+    {
+        //Auth
+        var authenticated = AuthValidator.UserHasId(HttpContext.Request, userId.ToString());
+        if (!authenticated) return Unauthorized();
+        
+        return Ok(_playerProcess.ChangeColor(userId));
     }
 }

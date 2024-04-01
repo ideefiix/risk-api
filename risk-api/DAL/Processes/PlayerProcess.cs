@@ -50,7 +50,7 @@ public class PlayerProcess
         var p = new Player
         {
             Username = request.Username,
-            Color = ColorGenerator.GetRandomColour(),
+            Color = ColorGenerator.GetRandomColor(),
             Cash = 100,
             Troops = 100,
             CashIncome = 10,
@@ -63,6 +63,20 @@ public class PlayerProcess
         _context.Players.Add(p);
         _context.SaveChanges();
         return MapCreatePlayerDto(p);
+    }
+
+    public ChangeColorDto ChangeColor(Guid userId)
+    {
+        var player = _context.Players.Find(userId);
+        if(player == null) throw new KeyNotFoundException("Player does not exist");
+
+        if (player.RerollsLeft <= 0) throw new ArgumentException("Player is out of color rerolls");
+        player.Color = ColorGenerator.GetRandomColor();
+        _context.SaveChanges();
+        return new ChangeColorDto
+        {
+            Color = player.Color
+        };
     }
 
     private CreatePlayerDto MapCreatePlayerDto(Player p)
