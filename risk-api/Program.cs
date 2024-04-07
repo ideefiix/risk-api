@@ -1,5 +1,6 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -9,6 +10,16 @@ using risk_api.DAL.Processes;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(corsBuilder =>
+    {
+        corsBuilder
+            .AllowAnyOrigin() // Allow requests from any origin
+            .AllowAnyMethod() // Allow any HTTP method (GET, POST, PUT, DELETE, etc.)
+            .AllowAnyHeader(); // Allow any header in the request
+    });
+});
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -69,6 +80,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 });
 
 builder.Services.AddScoped<PlayerProcess>();
+builder.Services.AddScoped<TerritoryProcess>();
 
 var app = builder.Build();
 
@@ -96,8 +108,10 @@ app.UseHttpsRedirection();
     app.UseExceptionHandler("/error");
 }*/
 
+app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+
 
 app.Run();

@@ -22,8 +22,9 @@ public class TerritoryProcess
             dtoList.Add(new GetAllTerritoriesDto
             {
                 Id = territory.Id,
-                Color = territory.Id,
+                Color = territory.Color,
                 OwnerId = territory.ControlledBy?.Id,
+                Ownername = territory.ControlledBy?.Username,
                 TimeConquered = territory.TimeConquered,
                 Troops = territory.Troops
             });
