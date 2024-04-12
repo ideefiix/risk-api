@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using risk_api.DAL.DBContext;
 using risk_api.DAL.Processes;
+using risk_api.Jobs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -78,9 +79,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
     };
 });
+builder.Services.AddHostedService<IncomeService>();
 
 builder.Services.AddScoped<PlayerProcess>();
 builder.Services.AddScoped<TerritoryProcess>();
+builder.Services.AddScoped<ServiceProcess>();
 
 var app = builder.Build();
 
@@ -103,15 +106,14 @@ using (var scope = app.Services.CreateScope())
 
 app.UseHttpsRedirection();
 
-/*if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment()) //TODO add !
 {
     app.UseExceptionHandler("/error");
-}*/
+}
 
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-
 
 app.Run();

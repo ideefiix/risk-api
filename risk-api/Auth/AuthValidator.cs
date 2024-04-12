@@ -38,4 +38,10 @@ public static class AuthValidator
         var jwt = new JwtSecurityTokenHandler().ReadJwtToken(clientToken);
         return jwt;
     }
+
+    public static Guid GetUserIdFromToken(HttpRequest request)
+    {
+        var token = ReadToken(request);
+        return Guid.Parse(token.Claims.FirstOrDefault(c => c.Type == "Id").Value); 
+    }
 }

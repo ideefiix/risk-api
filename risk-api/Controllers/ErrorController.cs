@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Mvc;
+using risk_api.Helpers;
 
 namespace risk_api.Controllers;
 
@@ -8,6 +10,35 @@ namespace risk_api.Controllers;
 public class ErrorController : ControllerBase
 {
     [Route("/error")]
-    public IActionResult HandleError() =>
-        Problem();
+    public IActionResult HandleError() {
+        var context = HttpContext.Features.Get<IExceptionHandlerFeature>();
+        var exception = context.Error; // Your exception
+
+        if (exception.GetType() == typeof(GenericClientException))//Return error message
+        {
+            var clientException = (GenericClientException)exception;
+            return Problem(
+                title: clientException.Message,
+                statusCode: clientException.ErrorCode);
+        }
+            
+        return Problem();
+    }
+
+    [Route("/error-development")]
+    public IActionResult HandleErrorDevelopment(
+        [FromServices] IHostEnvironment hostEnvironment)
+    {
+        if (!hostEnvironment.IsDevelopment())
+        {
+            return NotFound();
+        }
+
+        var exceptionHandlerFeature =
+            HttpContext.Features.Get<IExceptionHandlerFeature>()!;
+
+        return Problem(
+            detail: exceptionHandlerFeature.Error.StackTrace,
+            title: exceptionHandlerFeature.Error.Message);
+    }
 }

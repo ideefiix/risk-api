@@ -43,7 +43,7 @@ public class PlayerController : ControllerBase
         return Created("not used", dto);
     }
     
-    [HttpPut("/color/{userId}")]
+    [HttpPut("color/{userId}")]
     public ActionResult<GetPlayerDto> UpdateColor([FromRoute] Guid userId)
     {
         //Auth

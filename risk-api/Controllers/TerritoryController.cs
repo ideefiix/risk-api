@@ -25,7 +25,7 @@ public class TerritoryController : ControllerBase
         return Ok(territories);
     }
 
-    [HttpPost("/attack/{territoryId}")]
+    [HttpPost("attack/{territoryId}")]
     public ActionResult AttackTerritory([FromBody] AttackTerritoryRequest request)
     {
         //Auth
@@ -36,7 +36,7 @@ public class TerritoryController : ControllerBase
         return Ok(dto);
     }
     
-    [HttpPost("/reinforce/{territoryId}")]
+    [HttpPost("reinforce/{territoryId}")]
     public ActionResult ReinforceTerritory([FromBody] ReinforceTerritoryRequest request)
     {
         //Auth

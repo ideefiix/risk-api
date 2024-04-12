@@ -8,6 +8,6 @@ public static class ColorGenerator
 
     public static string GetRandomColor()
     {
-        return Color.FromArgb(rand.Next(256), rand.Next(256), rand.Next(256)).ToArgb().ToString("X6");
+        return "#" + Color.FromArgb(rand.Next(256), rand.Next(256), rand.Next(256), 255).ToArgb().ToString("X6"); //The "blue" is the alpha. Webrowser encodes it different
     } 
 }

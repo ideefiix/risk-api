@@ -11,5 +11,6 @@ public class DatabaseContext : DbContext
 
     public DbSet<Player> Players { get; set; } = null!;
     public DbSet<Territory> Territories { get; set; } = null!;
+    public DbSet<Building> Buildings { get; set; } = null!;
     
 }

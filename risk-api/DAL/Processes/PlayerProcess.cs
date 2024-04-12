@@ -34,7 +34,7 @@ public class PlayerProcess
         var player = _context.Players.Find(playerId);
         if (player == null)
         {
-            throw new KeyNotFoundException("A player with that Id does not exist");
+            throw new GenericClientException(404, "A player with that Id does not exist");
         }
         
         return MapGetSinglePlayerDto(player);
@@ -44,7 +44,7 @@ public class PlayerProcess
     {
         var usernameIsTaken = _context.Players.FirstOrDefault(p => p.Username == request.Username);
 
-        if (usernameIsTaken != null) throw new ArgumentException("Username is already taken");
+        if (usernameIsTaken != null) throw new GenericClientException(400, "Username is already taken");
 
         var hasher = new PasswordHasher<Player>();
         var p = new Player
@@ -68,10 +68,11 @@ public class PlayerProcess
     public ChangeColorDto ChangeColor(Guid userId)
     {
         var player = _context.Players.Find(userId);
-        if(player == null) throw new KeyNotFoundException("Player does not exist");
+        if (player == null) throw new GenericClientException(404, "Player does not exist"); ;
 
-        if (player.RerollsLeft <= 0) throw new ArgumentException("Player is out of color rerolls");
+        if (player.RerollsLeft <= 0) throw new GenericClientException(400, "Player is out of color rerolls");
         player.Color = ColorGenerator.GetRandomColor();
+        player.RerollsLeft -= 1;
         _context.SaveChanges();
         return new ChangeColorDto
         {

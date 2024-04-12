@@ -1,6 +1,8 @@
-﻿using risk_api.Controllers.Requests;
+﻿using Microsoft.EntityFrameworkCore;
+using risk_api.Controllers.Requests;
 using risk_api.DAL.DBContext;
 using risk_api.DAL.Processes.DTO;
+using risk_api.Helpers;
 
 namespace risk_api.DAL.Processes;
 
@@ -15,7 +17,7 @@ public class TerritoryProcess
 
     public IEnumerable<GetAllTerritoriesDto> GetAllTerritories()
     {
-        var territories = _context.Territories.ToList();
+        var territories = _context.Territories.Include(t => t.ControlledBy).ToList();
         var dtoList = new List<GetAllTerritoriesDto>();
         foreach (var territory in territories)
         {
@@ -35,16 +37,16 @@ public class TerritoryProcess
     public AttackTerritoryDto AttackTerritory(AttackTerritoryRequest request)
     {
         //GATE
-        if (request.Troops <= 0) throw new ArgumentException("Cant attack with that amount of troops");
-        
+        if (request.Troops <= 0) throw new GenericClientException(400, "Cant attack with that amount of troops");
+
         var attackingPlayer = _context.Players.Find(request.AttackingPlayerId);
-        if(attackingPlayer == null) throw new KeyNotFoundException("Attacking player does not exist");
-        if (attackingPlayer.Troops < request.Troops) throw new ArgumentException("Not enough troops");
+        if (attackingPlayer == null) throw new GenericClientException(404, "Attacking player does not exist"); 
+        if (attackingPlayer.Troops < request.Troops) throw new GenericClientException(400, "Not enough troops");
         
         var territory = _context.Territories.Find(request.TerritoryId);
-        if (territory == null) throw new KeyNotFoundException("Territory does not exist");
+        if (territory == null) throw new GenericClientException(404, "Territory does not exist");
         if (territory.ControlledBy?.Id == request.AttackingPlayerId)
-            throw new ArgumentException("Cannot attack your own territory");
+            throw new GenericClientException(400, "Cannot attack your own territory");
         //GATE PASSED
 
         if (request.Troops > territory.Troops) // Attacker win
@@ -53,7 +55,7 @@ public class TerritoryProcess
             territory.Troops = request.Troops - territory.Troops;
             territory.ControlledBy = attackingPlayer;
             territory.Color = attackingPlayer.Color;
-            territory.TimeConquered = DateTime.Now;
+            territory.TimeConquered = DateTime.UtcNow;
         }
         else // Attacker lose
         {
@@ -65,25 +67,26 @@ public class TerritoryProcess
 
         return new AttackTerritoryDto
         {
-            OwnerPlayerId = territory.ControlledBy?.Id,
-            TerritoryId = default,
-            Troops = territory.Troops,
+            Id = territory.Id,
             Color = territory.Color,
-            TimeConquered = territory.TimeConquered
+            OwnerId = territory.ControlledBy?.Id,
+            Ownername = territory.ControlledBy?.Username,
+            TimeConquered = territory.TimeConquered,
+            Troops = territory.Troops
         };
     }
 
     public ReinforceTerritoryDto ReinforceTerritory(ReinforceTerritoryRequest request)
     {
         //GATE
-        if (request.Troops <= 0) throw new ArgumentException("Cant reinforce with that amount of troops");
+        if (request.Troops <= 0) throw new GenericClientException(400, "Cant reinforce with that amount of troops"); 
         
         var reinforcingPlayer = _context.Players.Find(request.ReinforcingPlayerId);
-        if(reinforcingPlayer == null) throw new KeyNotFoundException("Player reinforcing does not exist");
-        if (reinforcingPlayer.Troops < request.Troops) throw new ArgumentException("Not enough troops");
+        if (reinforcingPlayer == null) throw new GenericClientException(404, "Player reinforcing does not exist");
+        if (reinforcingPlayer.Troops < request.Troops) throw new GenericClientException(400, "Not enough troops");
         
         var territory = _context.Territories.Find(request.TerritoryId);
-        if (territory == null) throw new KeyNotFoundException("Territory does not exist");
+        if (territory == null) throw new GenericClientException(404, "Territory does not exist");
         //GATE PASSED
 
         reinforcingPlayer.Troops -= request.Troops;
@@ -92,7 +95,11 @@ public class TerritoryProcess
 
         return new ReinforceTerritoryDto
         {
-            TerritoryId = territory.Id,
+            Id = territory.Id,
+            Color = territory.Color,
+            OwnerId = territory.ControlledBy?.Id,
+            Ownername = territory.ControlledBy?.Username,
+            TimeConquered = territory.TimeConquered,
             Troops = territory.Troops
         };
     }

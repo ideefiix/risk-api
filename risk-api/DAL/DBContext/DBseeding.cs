@@ -507,5 +507,23 @@ public static class DBseeding
         
         context.Territories.AddRange(territories);
         context.SaveChanges();
+
+        context.Buildings.Add(new Building
+        {
+            Id = 1,
+            Name = "Bank",
+            Cost = 100,
+            Type = BuildingType.Cash,
+            Income = 10
+        });
+        context.Buildings.Add(new Building
+        {
+            Id = 2,
+            Name = "Barrack",
+            Cost = 100,
+            Type = BuildingType.Troop,
+            Income = 10
+        });
+        context.SaveChanges();
     }
 }

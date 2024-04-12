@@ -3,6 +3,6 @@
 public class ReinforceTerritoryRequest
 {
     public Guid ReinforcingPlayerId { get; set; }
-    public Guid TerritoryId { get; set; }
+    public string TerritoryId { get; set; }
     public int Troops { get; set; }
 }
