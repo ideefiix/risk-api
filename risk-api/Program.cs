@@ -83,6 +83,7 @@ builder.Services.AddHostedService<IncomeService>();
 
 builder.Services.AddScoped<PlayerProcess>();
 builder.Services.AddScoped<TerritoryProcess>();
+builder.Services.AddScoped<BuildingProcess>();
 builder.Services.AddScoped<ServiceProcess>();
 
 var app = builder.Build();
@@ -106,7 +107,7 @@ using (var scope = app.Services.CreateScope())
 
 app.UseHttpsRedirection();
 
-if (app.Environment.IsDevelopment()) //TODO add !
+if (!app.Environment.IsDevelopment()) 
 {
     app.UseExceptionHandler("/error");
 }

@@ -36,6 +36,16 @@ public class ErrorController : ControllerBase
 
         var exceptionHandlerFeature =
             HttpContext.Features.Get<IExceptionHandlerFeature>()!;
+        var exception = exceptionHandlerFeature.Error; 
+
+        if (exception.GetType() == typeof(GenericClientException))
+        {
+            var clientException = (GenericClientException)exception;
+            return Problem(
+                title: clientException.Message,
+                detail:exceptionHandlerFeature.Error.StackTrace,
+                statusCode: clientException.ErrorCode);
+        }
 
         return Problem(
             detail: exceptionHandlerFeature.Error.StackTrace,

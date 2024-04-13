@@ -52,6 +52,7 @@ public class TerritoryProcess
         if (request.Troops > territory.Troops) // Attacker win
         {
             attackingPlayer.Troops -= request.Troops;
+            attackingPlayer.Kills += territory.Troops;
             territory.Troops = request.Troops - territory.Troops;
             territory.ControlledBy = attackingPlayer;
             territory.Color = attackingPlayer.Color;
@@ -61,6 +62,7 @@ public class TerritoryProcess
         {
             territory.Troops -= request.Troops;
             attackingPlayer.Troops -= request.Troops;
+            attackingPlayer.Kills += request.Troops; //Each attacker kill 1 defender
         }
 
         _context.SaveChanges();

@@ -4,7 +4,7 @@ namespace risk_api.Jobs;
 
 public class IncomeService : BackgroundService
 {
-    private readonly PeriodicTimer _timer = new PeriodicTimer(TimeSpan.FromMinutes(2));
+    private readonly PeriodicTimer _timer = new PeriodicTimer(TimeSpan.FromMinutes(5));
     private IServiceProvider Services { get; } 
     
     public IncomeService(IServiceProvider services)
