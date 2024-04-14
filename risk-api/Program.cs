@@ -1,6 +1,5 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -57,15 +56,31 @@ builder.Services.AddSwaggerGen(c =>
     c.AddSecurityRequirement(securityRequirement);
 });
 
+string dbConnectionString;
+string jwtIssuer;
+string jwtKey;
+
+if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production")
+{
+    dbConnectionString = Environment.GetEnvironmentVariable("DB_CON_STR");
+    jwtIssuer = Environment.GetEnvironmentVariable("DB_CON_STR");
+    jwtKey = Environment.GetEnvironmentVariable("DB_CON_STR");
+}
+else
+{
+    dbConnectionString = builder.Configuration.GetConnectionString("DatabaseContext");
+    jwtIssuer = builder.Configuration.GetSection("Jwt:Issuer").Get<string>();
+    jwtKey = builder.Configuration.GetSection("Jwt:Key").Get<string>();
+}
+
 builder.Services.AddDbContextFactory<DatabaseContext>(options =>
+    options.UseNpgsql(dbConnectionString));
+
+builder.Services.AddDbContext<DatabaseContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DatabaseContext") ??
                       throw new InvalidOperationException("Connection string 'DatabaseContext' not found.")));
 
-builder.Services.AddDbContext<DatabaseContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DatabaseContext") ?? throw new InvalidOperationException("Connection string 'DatabaseContext' not found.")));
 
-var jwtIssuer = builder.Configuration.GetSection("Jwt:Issuer").Get<string>();
-var jwtKey = builder.Configuration.GetSection("Jwt:Key").Get<string>();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
 {
     options.TokenValidationParameters = new TokenValidationParameters
@@ -107,7 +122,7 @@ using (var scope = app.Services.CreateScope())
 
 app.UseHttpsRedirection();
 
-if (!app.Environment.IsDevelopment()) 
+if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/error");
 }

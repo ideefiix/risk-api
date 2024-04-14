@@ -1,0 +1,3 @@
+﻿To build docker:
+
+docker build -t risk-api  .
