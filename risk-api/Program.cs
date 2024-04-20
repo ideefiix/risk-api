@@ -63,8 +63,8 @@ string jwtKey;
 if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production")
 {
     dbConnectionString = Environment.GetEnvironmentVariable("DB_CON_STR");
-    jwtIssuer = Environment.GetEnvironmentVariable("DB_CON_STR");
-    jwtKey = Environment.GetEnvironmentVariable("DB_CON_STR");
+    jwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER");
+    jwtKey = Environment.GetEnvironmentVariable("JWT_KEY");
 }
 else
 {
