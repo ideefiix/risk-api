@@ -36,6 +36,17 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
+    },
+    "prod": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": false,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Production",
+        "DB_CON_STR": "host=localhost;port=5432;database=postgres;user id=postgres;password=postgres",
+        "JWT_ISSUER": "lol",
+        "JWT_KEY": "lol"
+      }
     }
   }
 }

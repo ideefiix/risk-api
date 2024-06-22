@@ -48,8 +48,8 @@ public class AuthController : ControllerBase
             new Claim("Id", player.Id.ToString())
         };
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config.GetSection("Jwt:Key").Value));
-        var issuer = _config.GetSection("Jwt:Issuer").Value;
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT_KEY")));
+        var issuer = Environment.GetEnvironmentVariable("JWT_ISSUER");
 
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
             

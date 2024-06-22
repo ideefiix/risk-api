@@ -6,8 +6,12 @@ using Microsoft.OpenApi.Models;
 using risk_api.DAL.DBContext;
 using risk_api.DAL.Processes;
 using risk_api.Jobs;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .CreateLogger();
 
 // Add services to the container.
 builder.Services.AddCors(options =>
@@ -62,15 +66,23 @@ string jwtKey;
 
 if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production")
 {
-    dbConnectionString = Environment.GetEnvironmentVariable("DB_CON_STR");
-    jwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER");
-    jwtKey = Environment.GetEnvironmentVariable("JWT_KEY");
+    Log.Information("Running in PROD environment");
+    dbConnectionString = Environment.GetEnvironmentVariable("DB_CON_STR") ?? throw new InvalidOperationException();
+    jwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? throw new InvalidOperationException();
+    jwtKey = Environment.GetEnvironmentVariable("JWT_KEY") ?? throw new InvalidOperationException();
+    Log.Information("ENV:ConnectionString " + dbConnectionString);
+    Log.Information("ENV:jwtIssuer " + jwtIssuer);
+    Log.Information("ENV:jwtkey " + jwtKey);
 }
 else
 {
+    Log.Information("Running in dev environment");
     dbConnectionString = builder.Configuration.GetConnectionString("DatabaseContext");
     jwtIssuer = builder.Configuration.GetSection("Jwt:Issuer").Get<string>();
     jwtKey = builder.Configuration.GetSection("Jwt:Key").Get<string>();
+    Environment.SetEnvironmentVariable("DB_CON_STR", dbConnectionString);
+    Environment.SetEnvironmentVariable("JWT_ISSUER", jwtIssuer);
+    Environment.SetEnvironmentVariable("JWT_KEY", jwtKey);
 }
 
 builder.Services.AddDbContextFactory<DatabaseContext>(options =>
@@ -113,7 +125,6 @@ if (app.Environment.IsDevelopment())
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-
     var context = services.GetRequiredService<DatabaseContext>();
     //context.Database.EnsureDeleted();
     context.Database.EnsureCreated(); // TODO add migrations
